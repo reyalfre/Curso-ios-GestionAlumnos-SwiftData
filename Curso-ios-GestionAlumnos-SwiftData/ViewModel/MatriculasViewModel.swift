@@ -26,16 +26,33 @@ class MatriculasViewModel {
                 sortBy: [SortDescriptor(\.fechaMatricula, order: .reverse)]
             )
             todasLasMatriculas = try context.fetch(descriptorTodas)
-            
+
             let filtroAprobadas = #Predicate<Matricula> {
                 matricula in (matricula.calificacion ?? 0.0) >= 5.0
             }
             let descriptorAprobadas = FetchDescriptor<Matricula>(
-                predicate: filtroAprobadas, sortBy: [SortDescriptor(\.fechaMatricula, order: .reverse)])
+                predicate: filtroAprobadas,
+                sortBy: [SortDescriptor(\.fechaMatricula, order: .reverse)]
+            )
             matriculasAprobadas = try context.fetch(descriptorAprobadas)
-            
+            if let nombreABuscar = nombreAlumno {
+                let filtroPorAlumno = #Predicate<Matricula> {
+                    matricula in
+                    matricula.estudiante?.nombre.contains(nombreABuscar) == true
+                }
+                let descriptorAlumnos = FetchDescriptor<Matricula>(
+                    predicate: filtroPorAlumno
+                )
+                matriculasDeAlumno = try context.fetch(descriptorAlumnos)
+            }
+
         } catch {
             print("Error cargando matrículas: \(error)")
         }
+    }
+    func eliminarMatricular(matricula: Matricula) {
+        context.delete(matricula)
+        // Hay que recargar los arraus para que la UI se entere que hemos borrado
+        cargarDatos()
     }
 }

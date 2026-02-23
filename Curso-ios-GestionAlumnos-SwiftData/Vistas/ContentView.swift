@@ -9,6 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var context
     var body: some View {
         TabView {
             VistaEstudiante()
@@ -19,7 +20,7 @@ struct ContentView: View {
                 .tabItem {
                     Label("Cursos", systemImage: "book")
                 }
-            VistaMatriculas()
+            VistaMatriculas(context: context)
                 .tabItem {
                     Label("Matrículas", systemImage: "list.bullet.clipboard")
                 }
@@ -215,83 +216,8 @@ struct VistaMatricularEstudiante: View {
         }
     }
 }
-struct VistaCursos: View {
-    @Query private var cursos: [Curso]
-    @State private var mostrarNuevoCurso = false
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(cursos) {
-                    curso in
-                    VStack(alignment: .leading) {
-                        Text(curso.nombre)
-                            .font(.headline)
-                        Text("Código: \(curso.codigo)")
-                            .font(.caption)
-                        Text("Profesor: \(curso.profesor)")
-                            .font(.caption)
-                        Text("Estudiantes: \(curso.estudiantes.count)")
-                            .font(.caption)
-                    }
-                }
-            }
-            .navigationTitle("Cursos")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Agregar") {
-                        mostrarNuevoCurso = true
-                    }
-                }
-            }
-            .sheet(isPresented: $mostrarNuevoCurso) {
-                VistaNuevoCurso()
-            }
-        }
 
-    }
-}
-struct VistaNuevoCurso: View {
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
 
-    @State private var codigo = ""
-    @State private var nombre = ""
-    @State private var creditos = 3
-    @State private var profesor = ""
-    var body: some View {
-        NavigationStack {
-            Form {
-                TextField("Código", text: $codigo)
-                TextField("Nombre", text: $nombre)
-                Stepper("Créditos: \(creditos)", value: $creditos, in: 1...10)
-                TextField("Profesor", text: $profesor)
-            }
-            .navigationTitle("Nuevo curso")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") {
-                        let curso = Curso(
-                            codigo: codigo,
-                            nombre: nombre,
-                            creditos: creditos,
-                            profesor: profesor
-                        )
-                        context.insert(curso)
-                        dismiss()
-                    }
-                    .disabled(
-                        codigo.isEmpty || nombre.isEmpty || profesor.isEmpty
-                    )
-                }
-            }
-        }
-    }
-}
 
 
 #Preview {
